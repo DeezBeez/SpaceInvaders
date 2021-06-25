@@ -1,7 +1,20 @@
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.TimerTask;
 
-public class Alien extends Rectangle {
+public class Alien extends Rectangle{
     String path = System.getProperty("user.dir") + "\\";
+
+    SpriteSheetManager ss;
+    int timercounter;
+
+    private Thread thread;
 
     static int EASY = 1;
     static int NORMAL = 2;
@@ -18,6 +31,10 @@ public class Alien extends Rectangle {
     int direction = 0;
     int speed;
     int health;
+    boolean dead;
+
+    Timer timer;
+
 
     public Alien(int x, int y, int type, int health){
         this.health = health;
@@ -33,12 +50,14 @@ public class Alien extends Rectangle {
             pic = Toolkit.getDefaultToolkit().getImage(path + "alienspaceship.gif");
         }
     }
+
     public void draw(Graphics g, Component c){
         g.drawImage(pic, this.x, this.y, width, height, c);
         return;
     }
+
     public void move(){
-        if(type == EASY){
+        if(type == EASY && !dead){
             if(direction == RIGHT){
                 x = x + speed;
                 if(x > 1780){
@@ -59,7 +78,22 @@ public class Alien extends Rectangle {
             }
         }
     }
-    public void death(){
-        pic = Toolkit.getDefaultToolkit().getImage(path + "explosion.gif");
+
+    public void death() {
+        ss = new SpriteSheetManager("explosionSheet.png");
+        ss.setSpriteSheetDimensions(5120, 2048);
+        ss.setSpriteDimensions(1024, 1024);
+        ss.setNumberOfSprites();
+        dead = true;
+
+        timercounter = 1;
+        java.util.Timer timer = new java.util.Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                pic = ss.getSprite(timercounter);
+                timercounter++;
+            }
+        },0, 150);
     }
 }

@@ -10,7 +10,6 @@ import java.util.Vector;
 public class SpaceInvaders extends JPanel implements Runnable, ActionListener, KeyListener{
     JFrame fenster;
     Player player;
-    Image explosion;
     Image background;
     Image erde;
     Image earthbackground;
@@ -18,8 +17,6 @@ public class SpaceInvaders extends JPanel implements Runnable, ActionListener, K
     String path;
     private Timer timer;
     int delay;
-    private long lastTime;
-    private double fps;
 
     //Keystates
     Boolean uppressed = false;
@@ -37,7 +34,6 @@ public class SpaceInvaders extends JPanel implements Runnable, ActionListener, K
     Erde erdeObj;
     Vector<Shoot> missiles;
     Vector<Alien> aliens;
-    Vector<Explosion> explosions;
 
     //NPC
     Alien alien;
@@ -56,12 +52,10 @@ public class SpaceInvaders extends JPanel implements Runnable, ActionListener, K
         erde = new ImageIcon(path + "earth.gif").getImage();
         earthbackground = new ImageIcon(path + "earthbackground.gif").getImage();
         selection = new ImageIcon(path + "Selection.gif").getImage();
-        explosion = Toolkit.getDefaultToolkit().getImage(path + "explosion.gif");
 
         //Vectors
         missiles = new Vector<Shoot>();
         aliens = new Vector<Alien>();
-        explosions = new Vector<Explosion>();
 
         //Init
         System.out.println(path);
@@ -135,11 +129,6 @@ public class SpaceInvaders extends JPanel implements Runnable, ActionListener, K
             while (eShoot.hasMoreElements()){
                 eShoot.nextElement().draw(g, this);
             }
-            Enumeration<Explosion> eExplosion = explosions.elements();
-            while(eExplosion.hasMoreElements()){
-                Explosion e = eExplosion.nextElement();
-                e.draw(g,this);
-            }
         }
     }
 
@@ -156,31 +145,25 @@ public class SpaceInvaders extends JPanel implements Runnable, ActionListener, K
         while (eAlien.hasMoreElements()){
             Alien a = eAlien.nextElement();
             a.move();
+            if(a.type == a.EASY && a.timercounter > 8){
+                aliens.remove(a);
+            }
             Enumeration<Shoot> eShoot2 = missiles.elements();
             while (eShoot2.hasMoreElements()){
                 Shoot m2 = eShoot2.nextElement();
-                if(a.intersects(m2)) {
-                    aliens.remove(a);
+                if(a.intersects(m2) && !a.dead) {
+                    a.death();
                     missiles.remove(m2);
-                    explosions.addElement(new Explosion(a.x,a.y));
-                    explosions.lastElement().x = explosions.lastElement().x - (explosions.lastElement().width - a.width)/2;
-                    explosions.lastElement().y = explosions.lastElement().y - (explosions.lastElement().height - a.height)/2;
                 }
             }
-        }
-        Enumeration<Explosion> eExplosion = explosions.elements();
-        while(eExplosion.hasMoreElements()){
-            Explosion e = eExplosion.nextElement();
-            if(e.destroy == true){
-                explosions.remove(e);
-            }
-
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        aliens.addElement(new Alien(0,0, Alien.EASY, 1));
+        if(level == ERDE) {
+            aliens.addElement(new Alien(0,0, Alien.EASY, 1));
+        }
     }
 
     @Override
